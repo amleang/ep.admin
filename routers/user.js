@@ -1,19 +1,35 @@
 
 const router = require('koa-router')();
 const db = require('../lib/mysql-helper');
-const sqlMap=require('../map/user')
+const sqlMap = require('../map/user')
+const tip = require("../lib/tip")
+const Utils = require("../lib/utils")
 const md5 = require('md5');
 router.get('/api/user/list', async (ctx, next) => {
     await db.query(sqlMap.list, null).then(res => {
         console.log("res=>", res);
-        ctx.body = res
+        ctx.body = { ...tip[200], data: res };
+    }).catch(e => {
+        ctx.body = { ...tip[2001] }
     })
 })
 
-router.post('/api/login',async (ctx,next)=>{
-    await db.query(sqlMap.login,{account:'admin',pwd:'1'}).then(res=>{
-        console.log("res=>", res);
-        ctx.body = res
+router.post('/api/login', async (ctx, next) => {
+    console.log(ctx.request.body)
+    let data = Utils.filter(ctx.request.body, ['account', 'pwd']);
+    let res = Utils.formatData(data, [
+        { key: 'account', type: 'string' },
+        { key: 'pwd', type: 'string' },
+    ]);
+    if (!res || Object.keys(data).length !== 2) return ctx.body = tip[1004];
+    let value = [ctx.request.body.account, ctx.request.body.pwd];
+    await db.query(sqlMap.login, value).then(res => {
+        if (res.length > 0)
+            ctx.body = { ...tip[200], docs: res[0] };
+        else
+            ctx.body = { ...tip[1003] }
+    }).catch(e => {
+        ctx.body = { ...tip[2001] }
     })
 })
 module.exports = router;

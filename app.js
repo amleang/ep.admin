@@ -23,7 +23,7 @@ app.use(session({
     key: 'USER_SID',
     store: new MysqlStore(sessionMysqlConfig)
 })) */
-app.use(errorHandler());
+/* app.use(errorHandler()); */
 // 使用表单解析中间件
 app.use(bodyParser())
 // compressor
