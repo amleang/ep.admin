@@ -1,0 +1,23 @@
+{
+  "name": "ep.admin",
+  "version": "1.0.0",
+  "description": "ep.admin project",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "zal",
+  "license": "ISC",
+  "dependencies": {
+    "koa": "^2.5.1",
+    "koa-bodyparser": "^4.2.1",
+    "koa-compress": "^3.0.0",
+    "koa-error": "^3.2.0",
+    "koa-mysql-session": "0.0.2",
+    "koa-router": "^7.4.0",
+    "koa-session-minimal": "^3.0.4",
+    "md5": "^2.2.1",
+    "moment": "^2.22.2",
+    "mysql": "^2.15.0"
+  }
+}
