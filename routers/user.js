@@ -5,6 +5,7 @@ const sqlMap = require('../map/user')
 const tip = require("../lib/tip")
 const Utils = require("../lib/utils")
 const md5 = require('md5');
+const redisFunc = require("../lib/redis-helper")
 router.get('/api/user/list', async (ctx, next) => {
     await db.query(sqlMap.list, null).then(res => {
         console.log("res=>", res);
@@ -15,7 +16,10 @@ router.get('/api/user/list', async (ctx, next) => {
 })
 
 router.post('/api/login', async (ctx, next) => {
-    console.log(ctx.request.body)
+    console.log(ctx.request.body);
+    var setVal = await redisFunc.set('name', 'zhangsan');
+    var getVal = await redisFunc.get('name1111');
+    var setVal2=await redisFunc.setExp("name2",'lisi',60)
     let data = Utils.filter(ctx.request.body, ['account', 'pwd']);
     let res = Utils.formatData(data, [
         { key: 'account', type: 'string' },

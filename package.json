@@ -9,6 +9,8 @@
   "author": "zal",
   "license": "ISC",
   "dependencies": {
+    "co-redis": "^2.1.1",
+    "ioredis": "^3.2.2",
     "is": "^3.2.1",
     "koa": "^2.5.1",
     "koa-bodyparser": "^4.2.1",
@@ -19,6 +21,7 @@
     "koa-session-minimal": "^3.0.4",
     "md5": "^2.2.1",
     "moment": "^2.22.2",
-    "mysql": "^2.15.0"
+    "mysql": "^2.15.0",
+    "redis": "^2.8.0"
   }
 }
