@@ -1,13 +1,13 @@
 const http = require('http');
 const Koa = require('koa');
 const path = require('path')
-const bodyParser =  require('koa-bodyparser')
+const bodyParser = require('koa-bodyparser')
 const errorHandler = require('koa-error');
 const compress = require('koa-compress');
 const session = require('koa-session-minimal');
 const MysqlStore = require('koa-mysql-session');
 const config = require('./config/default');
-const router =require('./routers');
+const router = require('./routers');
 
 var app = new Koa();
 /* // session存储配置
@@ -23,6 +23,11 @@ app.use(session({
     key: 'USER_SID',
     store: new MysqlStore(sessionMysqlConfig)
 })) */
+
+app.use(session({
+    key: 'session-id'         // cookie 中存储 session-id 时的键名, 默认为 koa:sess
+   
+}))
 /* app.use(errorHandler()); */
 // 使用表单解析中间件
 app.use(bodyParser())
