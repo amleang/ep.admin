@@ -11,7 +11,6 @@ const redisFunc = require("../lib/redis-helper")
  * 验证码
  */
 router.get("/api/captcha", async (ctx, next) => {
-    debugger
     var captcha = await svgCaptcha.create();
     ctx.session.captcha = captcha.text;
     ctx.type = 'svg';
