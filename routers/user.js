@@ -1,4 +1,4 @@
-
+const uuid = require('node-uuid');
 const router = require('koa-router')();
 const db = require('../lib/mysql-helper');
 const sqlMap = require('../map/user')
@@ -14,7 +14,7 @@ router.get("/api/captcha", async (ctx, next) => {
     var captcha = await svgCaptcha.create();
     ctx.session.captcha = captcha.text;
     ctx.type = 'svg';
-    ctx.body=captcha.data;
+    ctx.body = captcha.data;
 })
 /**
  * 用户列表
@@ -33,19 +33,31 @@ router.get('/api/user/list', async (ctx, next) => {
  */
 router.post('/api/login', async (ctx, next) => {
     console.log(ctx.request.body);
-    var setVal = await redisFunc.set('name', 'zhangsan');
-    var getVal = await redisFunc.get('name1111');
-    var setVal2 = await redisFunc.setExp("name2", 'lisi', 60)
-    let data = Utils.filter(ctx.request.body, ['account', 'pwd']);
-    let res = Utils.formatData(data, [
+    /*  var setVal = await redisFunc.set('name', 'zhangsan');
+     var getVal = await redisFunc.get('name1111');
+     var setVal2 = await redisFunc.setExp("name2", 'lisi', 60) */
+    //let data = Utils.filter(ctx.request.body, ['account', 'pwd', 'captcha']);
+    let res = Utils.formatData(ctx.request.body, [
         { key: 'account', type: 'string' },
         { key: 'pwd', type: 'string' },
+        { key: 'captcha', type: 'string' },
     ]);
-    if (!res || Object.keys(data).length !== 2) return ctx.body = tip[1004];
+    if (!res || Object.keys(ctx.request.body).length !== 3) return ctx.body = tip[1004];
+    if (ctx.session.captcha.toLocaleLowerCase() != ctx.request.body.captcha.toLocaleLowerCase()) {
+        ctx.body = { ...tip[1006] }
+        return
+    }
     let value = [ctx.request.body.account, ctx.request.body.pwd];
-    await db.query(sqlMap.login, value).then(res => {
-        if (res.length > 0)
-            ctx.body = { ...tip[200], docs: res[0] };
+    await db.query(sqlMap.login, value).then(async res => {
+        if (res.length > 0) {
+            var token = uuid.v1();
+            var ttl = await redisFunc.getTTL(ctx.request.body.account)
+            let setVal = await redisFunc.setExp(ctx.request.body.account, token, 60 * 60 * 2);
+            if (setVal == 'OK')
+                ctx.body = { ...tip[200], docs: res[0], token: token };
+            else
+                ctx.body = { ...tip[1005] }
+        }
         else
             ctx.body = { ...tip[1003] }
     }).catch(e => {
