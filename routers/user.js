@@ -50,7 +50,7 @@ router.post('/api/login', async (ctx, next) => {
     let value = [ctx.request.body.account, ctx.request.body.pwd];
     await db.query(sqlMap.login, value).then(async res => {
         if (res.length > 0) {
-            var token = uuid.v1();
+            var token = ctx.request.body.account + "|" + uuid.v1();
             var ttl = await redisFunc.getTTL(ctx.request.body.account)
             let setVal = await redisFunc.setExp(ctx.request.body.account, token, 60 * 60 * 2);
             if (setVal == 'OK')
