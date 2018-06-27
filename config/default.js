@@ -10,11 +10,11 @@ const config = {
     port: '3306',
     host: '118.25.98.91'
   },
-  redisConfig:{
-    RDS_PORT:6379,
-    RDS_HOT:'118.25.98.91',
-    RDS_PWD:'Zal_2017abc,.',
-    RDS_OPTS:{auth_pass:'Zal_2017abc,.'}
+  redisConfig: {
+    RDS_PORT: 6379,
+    RDS_HOT: '118.25.98.91',
+    RDS_PWD: 'Zal_2017abc,.',
+    RDS_OPTS: {no_ready_check: true }
   }
 }
 
