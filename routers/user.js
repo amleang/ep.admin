@@ -7,6 +7,7 @@ const Utils = require("../lib/utils")
 const md5 = require('md5');
 const svgCaptcha = require('svg-captcha');
 const redisFunc = require("../lib/redis-helper")
+const redis2 = require("../lib/redis-helper")
 /**
  * 验证码
  */
@@ -33,6 +34,7 @@ router.get('/api/user/list', async (ctx, next) => {
  */
 router.post('/api/login', async (ctx, next) => {
     console.log(ctx.request.body);
+
     /*  var setVal = await redisFunc.set('name', 'zhangsan');
      var getVal = await redisFunc.get('name1111');
      var setVal2 = await redisFunc.setExp("name2", 'lisi', 60) */
@@ -50,9 +52,9 @@ router.post('/api/login', async (ctx, next) => {
     let value = [ctx.request.body.account, ctx.request.body.pwd];
     await db.query(sqlMap.login, value).then(async res => {
         if (res.length > 0) {
-            var token = ctx.request.body.account + "|" + uuid.v1();
+            var token = uuid.v1();
             var ttl = await redisFunc.getTTL(ctx.request.body.account)
-            let setVal = await redisFunc.setExp(ctx.request.body.account, token, 60 * 60 * 2);
+            let setVal = await redisFunc.setExp(token, res[0], 60 * 60 * 2);
             if (setVal == 'OK')
                 ctx.body = { ...tip[200], docs: res[0], token: token };
             else

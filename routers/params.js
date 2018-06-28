@@ -17,7 +17,7 @@ router.get("/api/params/list", async (ctx, next) => {
     ]);
     if (!res) return ctx.body = tip[1004];
     var tokenExists = await redisFunc.token(ctx);
-    if (tokenExists.code != 200) {
+    if (tokenExists.code != 200) {  
         ctx.body = { ...tokenExists };
         return;
     }
@@ -71,7 +71,7 @@ router.post('/api/params', async (ctx, next) => {
     ]);
     if (!res) return ctx.body = tip[1004];
     var data = ctx.request.query;
-    let value = [data.name, data.value, data.active, data.weight, data.remark, redisFunc.loginName];
+    let value = [data.name, data.value, data.active, data.weight, data.remark, redisFunc.loginName.account];
     await db.query(sqlMap.add, value).then(res => {
         ctx.body = { ...tip[200] }
     }).catch(e => {
