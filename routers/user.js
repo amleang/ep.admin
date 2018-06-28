@@ -7,7 +7,6 @@ const Utils = require("../lib/utils")
 const md5 = require('md5');
 const svgCaptcha = require('svg-captcha');
 const redisFunc = require("../lib/redis-helper")
-const redis2 = require("../lib/redis-helper")
 /**
  * 验证码
  */
@@ -53,8 +52,7 @@ router.post('/api/login', async (ctx, next) => {
     await db.query(sqlMap.login, value).then(async res => {
         if (res.length > 0) {
             var token = uuid.v1();
-            var ttl = await redisFunc.getTTL(ctx.request.body.account)
-            let setVal = await redisFunc.setExp(token, res[0], 60 * 60 * 2);
+            let setVal = await redisFunc.setExp(token,JSON.stringify(res[0]), 60 * 60 * 2);
             if (setVal == 'OK')
                 ctx.body = { ...tip[200], docs: res[0], token: token };
             else

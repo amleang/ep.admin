@@ -17,15 +17,15 @@ router.get("/api/params/list", async (ctx, next) => {
     ]);
     if (!res) return ctx.body = tip[1004];
     var tokenExists = await redisFunc.token(ctx);
-    if (tokenExists.code != 200) {  
+    if (tokenExists.code != 200) {
         ctx.body = { ...tokenExists };
         return;
     }
     let page = ctx.request.query.page;
     let size = ctx.request.query.size;
 
-    let where = '';
-    ctx.request.query.name ? where += ` name='` + ctx.request.query.name + `'` : '';
+    let where = `1=1`;
+    ctx.request.query.name ? where += ` and name='` + ctx.request.query.name + `'` : '';
     ctx.request.query.value ? where != '' ? where += ` and value='` + ctx.request.query.value + `'` : where += ` value='` + ctx.request.query.value + `'` : '';
     ctx.request.query.active ? where != '' ? where += ` and active='` + ctx.request.query.active + `'` : where += ` active='` + ctx.request.query.active + `'` : '';
     let count = 0;
@@ -64,14 +64,20 @@ router.get('/api/params/:id', async (ctx, next) => {
 router.post('/api/params', async (ctx, next) => {
     let res = Utils.formatData(ctx.request.query, [
         { key: 'name', type: 'string' },
+        { key: "pid", type: "string" },
         { key: 'value', type: 'string' },
         { key: 'active', type: 'string' },
         { key: 'weight', type: 'string' },
         { key: 'remark', type: 'string' },
     ]);
     if (!res) return ctx.body = tip[1004];
-    var data = ctx.request.query;
-    let value = [data.name, data.value, data.active, data.weight, data.remark, redisFunc.loginName.account];
+    var tokenExists = await redisFunc.token(ctx);
+    if (tokenExists.code != 200) {
+        ctx.body = { ...tokenExists };
+        return;
+    }
+    var data = ctx.request.body;
+    let value = [data.pid, data.name, data.value, data.active, data.weight, data.remark, tokenExists.loginInfo.account];
     await db.query(sqlMap.add, value).then(res => {
         ctx.body = { ...tip[200] }
     }).catch(e => {
