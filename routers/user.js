@@ -38,11 +38,8 @@ router.post('/api/login', async (ctx, next) => {
      var getVal = await redisFunc.get('name1111');
      var setVal2 = await redisFunc.setExp("name2", 'lisi', 60) */
     //let data = Utils.filter(ctx.request.body, ['account', 'pwd', 'captcha']);
-    let res = Utils.formatData(ctx.request.body, [
-        { key: 'account', type: 'string' },
-        { key: 'pwd', type: 'string' },
-        { key: 'captcha', type: 'string' },
-    ]);
+    let res = Utils.formatData(ctx.request.body, ['account','pwd','captcha']);
+        
     if (!res || Object.keys(ctx.request.body).length !== 3) return ctx.body = tip[1004];
     if (ctx.session.captcha.toLocaleLowerCase() != ctx.request.body.captcha.toLocaleLowerCase()) {
         ctx.body = { ...tip[1006] }

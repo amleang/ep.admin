@@ -8,26 +8,21 @@ const redisFunc = require("../lib/redis-helper")
  * 参数列表
  */
 router.get("/api/params/list", async (ctx, next) => {
-    let res = Utils.formatData(ctx.request.query, [
-        { key: 'page', type: 'string' },
-        { key: 'size', type: 'string' },
-        { key: 'name', type: 'string' },
-        { key: 'value', type: 'string' },
-        { key: 'active', type: 'string' },
-    ]);
+    let res = Utils.formatData(ctx.request.query, ['page', 'size', 'pid', 'name', 'value', 'active'], false);
     if (!res) return ctx.body = tip[1004];
     var tokenExists = await redisFunc.token(ctx);
     if (tokenExists.code != 200) {
         ctx.body = { ...tokenExists };
         return;
     }
-    let page = ctx.request.query.page;
-    let size = ctx.request.query.size;
+    let page = ctx.request.query.page || 1;
+    let size = ctx.request.query.size || 10;
 
-    let where = `1=1`;
-    ctx.request.query.name ? where += ` and name='` + ctx.request.query.name + `'` : '';
-    ctx.request.query.value ? where != '' ? where += ` and value='` + ctx.request.query.value + `'` : where += ` value='` + ctx.request.query.value + `'` : '';
-    ctx.request.query.active ? where != '' ? where += ` and active='` + ctx.request.query.active + `'` : where += ` active='` + ctx.request.query.active + `'` : '';
+    let where = {};
+    if (ctx.request.query.pid) where.pid = ctx.request.query.pid;
+    if (ctx.request.query.name) where.name = ctx.request.query.name;
+    if (ctx.request.query.value) where.value = ctx.request.query.value;
+    if (ctx.request.query.active) where.active = ctx.request.query.active;
     let count = 0;
     await db.query(sqlMap.count, [where]).then(res => {
         count = res[0].count;
@@ -47,7 +42,7 @@ router.get('/api/params/:id', async (ctx, next) => {
         ctx.body = { ...tokenExists };
         return;
     }
-    let id = ctx.request.query.id;
+    let id = ctx.params.id;
     await db.query(sqlMap.item, [id]).then(res => {
         if (res.length > 0) {
             ctx.body = { ...tip[200], docs: res[0] };
@@ -62,14 +57,7 @@ router.get('/api/params/:id', async (ctx, next) => {
  * 添加
  */
 router.post('/api/params', async (ctx, next) => {
-    let res = Utils.formatData(ctx.request.query, [
-        { key: 'name', type: 'string' },
-        { key: "pid", type: "string" },
-        { key: 'value', type: 'string' },
-        { key: 'active', type: 'string' },
-        { key: 'weight', type: 'string' },
-        { key: 'remark', type: 'string' },
-    ]);
+    let res = Utils.formatData(ctx.request.query, ['name', 'pid', 'value', 'active', 'weight', 'remark']);
     if (!res) return ctx.body = tip[1004];
     var tokenExists = await redisFunc.token(ctx);
     if (tokenExists.code != 200) {
@@ -86,7 +74,21 @@ router.post('/api/params', async (ctx, next) => {
 })
 /**编辑 */
 router.put('/api/params/:id', async (ctx, next) => {
-
+    let res = Utils.formatData(ctx.request.body, ['name', 'pid', 'value', 'active', 'weight', 'remark']);
+    if (!res) return ctx.body = tip[1004];
+    var tokenExists = await redisFunc.token(ctx);
+    if (tokenExists.code != 200) {
+        ctx.body = { ...tokenExists };
+        return;
+    }
+    var data = ctx.request.body;
+    let id = ctx.params.id;
+    let value = [data.name, data.value, data.active, data.weight, data.remark, tokenExists.loginInfo.account, id];
+    await db.query(sqlMap.upd, value).then(res => {
+        ctx.body = { ...tip[200] }
+    }).catch(e => {
+        ctx.body = { ...tip[2003] }
+    })
 })
 /**
  * 删除
