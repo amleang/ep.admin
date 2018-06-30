@@ -4,6 +4,7 @@
   "description": "ep.admin project",
   "main": "index.js",
   "scripts": {
+    "dev":"node app",
     "test": "test"
   },
   "author": "zal",

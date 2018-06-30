@@ -94,6 +94,20 @@ router.put('/api/params/:id', async (ctx, next) => {
  * 删除
  */
 router.delete('/api/params/:id', async (ctx, next) => {
-
+    var tokenExists = await redisFunc.token(ctx);
+    if (tokenExists.code != 200) {
+        ctx.body = { ...tokenExists };
+        return;
+    }
+    let id = ctx.params.id;
+    await db.query(sqlMap.del, value).then(res => {
+        await db.query(sqlMap.delSub, value).then(res => {
+            ctx.body = { ...tip[200] }
+        }).catch(e => {
+            ctx.body = { ...tip[2004] }
+        })
+    }).catch(e => {
+        ctx.body = { ...tip[2004] }
+    })
 })
 module.exports = router;
