@@ -18,16 +18,24 @@ router.get("/api/params/list", async (ctx, next) => {
     let page = ctx.request.query.page || 1;
     let size = ctx.request.query.size || 10;
 
-    let where = {};
-    if (ctx.request.query.pid) where.pid = ctx.request.query.pid;
+    let whereCount = 'select count(*) as count from sys_parameter';
+    let whereList = "select * from sys_parameter";
+    let where = " where 1=1";
+    if (ctx.request.query.pid) where += " and pid=" + ctx.request.query.pid;
+    if (ctx.request.query.name) where += " and name like'%" + ctx.request.query.name + "%'";
+    if (ctx.request.query.value) where += " and value like'%" + ctx.request.query.value + "%'";
+    if (ctx.request.query.active) where += " and active=" + ctx.request.query.active;
+    whereCount += where;
+    whereList += where + " limit " + ((page - 1) * size) + "," + (page * size);
+    /* if (ctx.request.query.pid) where.pid = ctx.request.query.pid;
     if (ctx.request.query.name) where.name = ctx.request.query.name;
     if (ctx.request.query.value) where.value = ctx.request.query.value;
-    if (ctx.request.query.active) where.active = ctx.request.query.active;
+    if (ctx.request.query.active) where.active = ctx.request.query.active; */
     let count = 0;
-    await db.query(sqlMap.count, [where]).then(res => {
+    await db.query(whereCount).then(res => {
         count = res[0].count;
     })
-    await db.query(sqlMap.list, [where, (page - 1) * size, page * size]).then(res => {
+    await db.query(whereList).then(res => {
         ctx.body = { ...tip[200], count: count, data: res };
     }).catch(e => {
         ctx.body = { ...tip[2001] }
@@ -57,7 +65,7 @@ router.get('/api/params/:id', async (ctx, next) => {
  * 添加
  */
 router.post('/api/params', async (ctx, next) => {
-    let res = Utils.formatData(ctx.request.query, ['name', 'pid', 'value', 'active', 'weight', 'remark']);
+    let res = Utils.formatData(ctx.request.body, ['name', 'pid', 'value', 'active', 'weight', 'remark']);
     if (!res) return ctx.body = tip[1004];
     var tokenExists = await redisFunc.token(ctx);
     if (tokenExists.code != 200) {
@@ -100,14 +108,24 @@ router.delete('/api/params/:id', async (ctx, next) => {
         return;
     }
     let id = ctx.params.id;
-    await db.query(sqlMap.del, value).then(res => {
-        await db.query(sqlMap.delSub, value).then(res => {
+    let pid = ctx.request.query.pid;
+    if (pid == 0) {
+        await db.query(sqlMap.del, [id]).then(async res => {
+            await db.query(sqlMap.delSub, [id]).then(res => {
+                ctx.body = { ...tip[200] }
+            }).catch(e => {
+                ctx.body = { ...tip[2004] }
+            })
+        }).catch(e => {
+            ctx.body = { ...tip[2004] }
+        })
+    }
+    else {
+        await db.query(sqlMap.del, [id]).then(async res => {
             ctx.body = { ...tip[200] }
         }).catch(e => {
             ctx.body = { ...tip[2004] }
         })
-    }).catch(e => {
-        ctx.body = { ...tip[2004] }
-    })
+    }
 })
 module.exports = router;
